@@ -1,0 +1,16 @@
+{
+  "name": "raftjs",
+  "version": "1.0.0",
+  "description": "node.js implementation and expansion of raft consensus protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Isaac Smead",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^5.0.0",
+    "mocha": "^5.0.4",
+    "simple-json-db": "^1.2.1"
+  }
+}
