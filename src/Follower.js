@@ -5,37 +5,18 @@ const
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
-module.exports = class Candidate {
+module.exports = class Follower {
 
 
     constructor( node ){
 
-        this._role = Roles.CANDIDATE;
+        this._role = Roles.FOLLOWER;
         this._node = node;
-        this._requestVote();
+        this._timeout = this.listen();
     }
 
-    _requestVote(){
-
-        const
-            connection = this._node.connection,
-            nodeList = this._node.nodeList,
-            id = this._node.id,
-            mesage = {
-                term: this._node.
-            };
-
-
-        for(const nodeId of nodeList){
-            if(nodeId !== id){
-                connection.send()
-
-
-            }
-
-
-        }
-
+    listen(){
+        clearTimeout(this._timeout);
         const wait = Math.random() * Settings.TIMEOUT_WINDOW + Settings.MIN_TIMEOUT;
         return setTimeout(()=>{
             console.log(`${this._node.id} has timed out`)

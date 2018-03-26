@@ -15,12 +15,12 @@ module.exports = class Connection {
             })
 
             .on('message', (msg, rinfo) => {
-            handler(msg.toString());
+                handler(msg.toString());
             })
 
             .on('listening', () => {
-            const address = this._socket.address();
-            console.log(`UDP socket listening on ${address.address}:${address.port}`);
+                const address = this._socket.address();
+                console.log(`UDP socket listening on ${address.address}:${address.port}`);
             })
 
             .bind(port);
@@ -28,7 +28,7 @@ module.exports = class Connection {
     }
 
     send(message, destination) {
-        this._socket.send(message, destination, 'localhost', (e) => {
+        this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
             if(e){
                 console.error(`Error sending to port ${destination}`, e);
                 this._socket.close();

@@ -1,11 +1,13 @@
-const WAIT_LOW = 2;
-const WAIT_HIGH = 3;
 const Log = require('./Log');
 const Connection = require('./Connection');
+const Follower = require('./Follower');
+const Candidate = require('./Candidate');
+const Leader = require('./Leader');
 
 module.exports = class Node {
 
     constructor(id, nodeList){
+        this._role = new Follower(this);
         this._id = id;
         this._nodeList = nodeList;
         this._log = new Log(id);
@@ -13,8 +15,6 @@ module.exports = class Node {
         this._lastApplied = 0;
         this._connection = new Connection(id, this.onMessage);
     }
-
-
 
     get id(){
         return this._id;
@@ -26,7 +26,11 @@ module.exports = class Node {
         return this._log
     }
 
-    onMessage(message){
+    get connection() {
+        return this._connection;
+    }
 
+    onMessage(message){
+        this._role.handleMessage(message);
     }
 };

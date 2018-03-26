@@ -1,13 +1,16 @@
+const uuid = require("uuid/v4");
+
 module.exports = class Leader{
-    heartbeat;
 
     constructor(nodeList, log, connection){
         this.log = log;
-        this._nextIndex = {};
+        this._nodeInfo = {};
         this._matchIndex = {};
         for(const id of nodeList){
-            this._nextIndex[id] = this.log.index + 1;
-            this._matchIndex[id] = 0;
+            this._nodeInfo[id] = {
+                nextIndex : this.log.index + 1,
+                matchIndex : 0
+            };
         }
         this._connection = connection;
 
@@ -17,11 +20,22 @@ module.exports = class Leader{
 
     }
 
-    onMessage(message){
-
+    handleMessage(message){
+        console.log(message.term, message.success);
     }
 
     appendEntries(){
+        for(const node of Object.keys(this._nodeInfo)){
+            this._connection.send({
+                term: this.log.term,
+                id: this.log.id,
+                prevLogIndex: this.log.index,
+                pervLogTerm: this.log.term
+            });
 
+
+
+
+        }
     }
 };
