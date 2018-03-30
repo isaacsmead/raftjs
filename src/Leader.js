@@ -20,8 +20,16 @@ module.exports = class Leader{
         debug.log(participant.id, 'is now leader');
     }
 
-    handleMessage(message){
-        debug.log(message);
+    onAppendEntries(message){
+
+    }
+    onConfirmEntries(message){
+
+    }
+    onRequestVote(message){
+
+    }
+    onVote(message){
     }
 
     appendEntries(){

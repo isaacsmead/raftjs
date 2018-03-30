@@ -12,8 +12,6 @@ const
     Settings = c.Settings;
 
 
-
-
 module.exports = class Participant {
 
     constructor(options){
@@ -26,7 +24,6 @@ module.exports = class Participant {
             this._commitIndex = options.previousMode.commitIndex;
             this._lastApplied = options.previousMode.lastApplied;
             this._connection = options.previousMode.connection;
-
         }
         else if (options.hasOwnProperty('id') && options.hasOwnProperty('participantList')) {
             this._id = options.id;

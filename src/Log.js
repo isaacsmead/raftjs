@@ -9,7 +9,7 @@ const CURRENT_TERM = 'currentTerm';
 module.exports = class Log{
 
     constructor(nodeId){
-
+        if(!fs.existsSync('./logs')) fs.mkdirSync('./logs');
         this.db = new JSONdb(`./logs/${nodeId}.json`, {asyncWrite: false});
         this._index = this.db.get(INDEX);
         this._currentTerm = this.db.get(CURRENT_TERM);

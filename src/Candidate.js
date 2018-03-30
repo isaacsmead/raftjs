@@ -1,15 +1,16 @@
 const debug = require('./utility/debug')(__filename);
 const c = require('./Constants');
-const participant = require('./Participant');
+const Participant = require('./Participant');
 const
     Roles = c.Roles,
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
-module.exports = class Candidate {
+module.exports = class Candidate extends Participant{
 
 
-    constructor( participant ){
+    constructor( options ){
+        super(options);
         this._role = Roles.CANDIDATE;
         this._participant = participant;
         this._election = {};
@@ -44,7 +45,16 @@ module.exports = class Candidate {
         }
     }
 
-    handleVote(message){
+    onAppendEntries(message){
+
+    }
+    onConfirmEntries(message){
+
+    }
+    onRequestVote(message){
+
+    }
+    onVote(message){
         // todo how to handle term field in vote message?
         this._election[message.sender] = message.voteGranted;
 

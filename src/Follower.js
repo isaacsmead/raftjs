@@ -1,17 +1,17 @@
 const debug = require('./utility/debug')(__filename);
 const c = require('./Constants');
-const Node = require('./Participant');
+const Participant = require('./Participant');
 const
     Roles = c.Roles,
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
-module.exports = class Follower {
+module.exports = class Follower extends Participant{
 
 
-    constructor( participant ){
+    constructor( options ){
+        super (options);
         this._role = Roles.FOLLOWER;
-        this._participant = participant;
         this._timeout = this._listen();
         this._votedFor = null;
     }
@@ -36,7 +36,13 @@ module.exports = class Follower {
         }
     }
 
-    _handleRequestVote(message){
+    onAppendEntries(message){
+
+    }
+    onConfirmEntries(message){
+
+    }
+    onRequestVote(message){
         const lastLogEntry = this._participant.lastLogEntry;
         let voteGranted;
         if(message.term < this._participant.currentTerm){
@@ -45,8 +51,8 @@ module.exports = class Follower {
         }
         else if(this._votedFor === null ||
             (this._votedFor === message.sender &&
-            lastLogEntry.lastLogIndex <= message.lastLogIndex &&
-            lastLogEntry.lastLogTerm <= message.lastLogTerm)){
+                lastLogEntry.lastLogIndex <= message.lastLogIndex &&
+                lastLogEntry.lastLogTerm <= message.lastLogTerm)){
             voteGranted = true;
         }
         else{
@@ -64,5 +70,10 @@ module.exports = class Follower {
             },
             message.sender)
     }
+    onVote(message){
+
+    }
+    _handleRequestVote(message){}
+
 
 };

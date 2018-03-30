@@ -1,9 +1,9 @@
 const debug = require('./src/utility/debug')(__filename);
 
-const Node = require('./src/Participant');
+const Participant = require('./src/Participant');
 
 const TEST_TIMEOUT = 5000;
-const playerList = [
+const participantList = [
     8001,
     8002,
     8003,
@@ -11,16 +11,16 @@ const playerList = [
     8005
 ];
 
-let players = {};
+let participants = {};
 
-for( let player of playerList){
-    players[player] = new Node(player, playerList);
+for( let id of participantList){
+    participants[id] = new Participant({id, participantList});
 }
 
 
 setTimeout(()=> {
-    for(let player of playerList){
-        players[player].connection.close();
+    for(let participant of participantList){
+        participantList[participant].connection.close();
     }
 }, TEST_TIMEOUT);
 

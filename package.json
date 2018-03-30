@@ -4,7 +4,8 @@
   "description": "node.js implementation and expansion of raft consensus protocol",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=*,-mocha:* mocha"
+    "test": "DEBUG=*,-mocha:* mocha",
+    "experiment": "DEBUG=* node experiments.js"
   },
   "author": "Isaac Smead",
   "license": "ISC",
