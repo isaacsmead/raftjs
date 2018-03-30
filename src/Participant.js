@@ -42,62 +42,31 @@ module.exports = class Participant {
         }
     }
 
-    get id(){
-        return this._id;
-    }
-    get participantList(){
-        return this._participantList;
-    }
-    get commitIndex(){
-        return this._commitIndex;
-    }
-    get lastApplied(){
-        return this._lastApplied;
-    }
-    get log(){
-        return this._log
-    }
-    get connection() {
-        return this._connection;
-    }
-    get lastLogEntry(){
-        return this._log.lastLogEntry;
-    }
-    get currentTerm(){
-        return this._log.currentTerm;
-    }
-    set currentTerm(term){
-        this._log.currentTerm = term;
-    }
-    get participantList(){
-        return this._participantList;
-    }
+    get id() { return this._id }
+    get log() { return this._log }
+    get participantList() { return this._participantList }
+    get commitIndex() { return this._commitIndex }
+    get lastApplied() {  return this._lastApplied }
+    get connection() { return this._connection }
+    get lastLogEntry() { return this._log.lastLogEntry }
+    get currentTerm(){ return this._log.currentTerm }
+    set currentTerm(term){ this._log.currentTerm = term }
 
     onMessage(message){
-
         switch (message.type) {
             case MessageTypes.APPEND_ENTRIES:
+                this.onAppendEntries(message);
+                break;
+            case MessageTypes.CONFIRM_ENTRIES:
+                this.onConfirmEntries(message);
                 break;
             case MessageTypes.REQUEST_VOTE:
+                this.onRequestVote(message);
                 break;
             case MessageTypes.VOTE:
+                this.onVote(message);
                 break;
             default:
-        }
-
-        this._role.handleMessage(message);
-    }
-
-    setRole(role){
-        switch (role){
-            case Roles.FOLLOWER:
-                this._role = new Follower(this);
-                break;
-            case Roles.CANDIDATE:
-                this._role = new Candidate(this);
-                break;
-            case Roles.LEADER:
-                this._role = new Leader(this);
         }
     }
 };
