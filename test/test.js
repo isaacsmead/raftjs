@@ -1,3 +1,4 @@
+const debug = require('../src/utility/debug')(__filename);
 const assert = require('assert');
 const Log = require("../src/Log");
 const fs = require('fs-extra');
@@ -9,12 +10,12 @@ try{
     fs.unlinkSync(`./logs/${nodeId}.json`);
 }
 catch(e) {
-    console.error(`Error removing file`, e.message)
+    debug.error(`Error removing file`, e.message)
 }
 
 describe('log.js', () => {
 
-    const log = new Log(nodeId);
+    let log = new Log(nodeId);
 
     it('Should initiate with default values', () => {
         assert.equal(log.index, 0);
@@ -36,7 +37,16 @@ describe('log.js', () => {
         assert.equal(log2.currentTerm, 3);
         assert.equal(log2.getTerm(0), 2);
         assert.equal(log2.votedFor, otherNode);
+        log = log2;
     });
+
+    it('should get the previous entry index and term', () => {
+        log.currentTerm = 4;
+        assert.equal(log.currentTerm, 4);
+        const lastLogEntry = log.lastLogEntry;
+        assert.equal(lastLogEntry.lastLogIndex, log.index - 1);
+        assert.equal(lastLogEntry.lastLogTerm, 3)
+    })
 });
 
 describe('another test', ()=> {

@@ -13,6 +13,6 @@ exports.Roles = {
 };
 
 exports.Settings= {
-    TIMEOUT_WINDOW: 2000,
+    TIMEOUT_WINDOW: 4000,
     MIN_TIMEOUT : 1000,
 };

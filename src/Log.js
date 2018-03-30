@@ -1,3 +1,4 @@
+const debug = require('./utility/debug')(__filename);
 const fs = require('fs');
 const JSONdb = require('simple-json-db');
 
@@ -50,6 +51,14 @@ module.exports = class Log{
 
     get currentTerm(){
         return this._currentTerm;
+    }
+
+    get lastLogEntry(){
+        const atBegining = this._index === 0;
+        return {
+            lastLogIndex : atBegining ? 0 : this._index - 1,
+            lastLogTerm: atBegining ? 0 :  this.db.get(this._index - 1).term
+        }
     }
 
     getTerm(index) {

@@ -1,9 +1,28 @@
-const Fol = require('./src/Follower');
+const debug = require('./src/utility/debug')(__filename);
 
-const f = new Fol({});
+const Node = require('./src/Participant');
+
+const TEST_TIMEOUT = 5000;
+const playerList = [
+    8001,
+    8002,
+    8003,
+    8004,
+    8005
+];
+
+let players = {};
+
+for( let player of playerList){
+    players[player] = new Node(player, playerList);
+}
 
 
-
+setTimeout(()=> {
+    for(let player of playerList){
+        players[player].connection.close();
+    }
+}, TEST_TIMEOUT);
 
 /*const Conn = require('./src/Connection');
 const
