@@ -1,40 +1,25 @@
 const debug = require('./utility/debug')(__filename);
 const c = require('./Constants');
 const Participant = require('./Participant');
+const Candidate = require('./Candidate');
 const
     Roles = c.Roles,
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
-module.exports = class Follower extends Participant{
-
+class Follower extends Participant {
 
     constructor( options ){
         super (options);
-        this._role = Roles.FOLLOWER;
-        this._timeout = this._listen();
         this._votedFor = null;
     }
 
-    _listen(){
-        clearTimeout(this._timeout);
-        const wait = Math.random() * Settings.TIMEOUT_WINDOW + Settings.MIN_TIMEOUT;
-        return setTimeout(()=>{
-            this._participant.setRole(Roles.CANDIDATE);
-        }, wait)
+    onTimeout(){
+        this.roleChange(new Candidate(this));
+        this.cleanup();
     }
 
-    handleMessage(message){
-        debug.log(`${this._participant.id} got ${message.type} from ${message.sender}`);
-        switch (message.type) {
-            case MessageTypes.APPEND_ENTRIES:
-                break;
-            case MessageTypes.REQUEST_VOTE:
-                this._handleRequestVote(message);
-                break;
-            default:
-        }
-    }
+    get role(){return Roles.FOLLOWER}
 
     onAppendEntries(message){
 
@@ -43,11 +28,11 @@ module.exports = class Follower extends Participant{
 
     }
     onRequestVote(message){
-        const lastLogEntry = this._participant.lastLogEntry;
+        const lastLogEntry = this.lastLogEntry;
         let voteGranted;
-        if(message.term < this._participant.currentTerm){
-            voteGranted = false;
 
+        if(message.term < this.currentTerm){
+            voteGranted = false;
         }
         else if(this._votedFor === null ||
             (this._votedFor === message.sender &&
@@ -61,19 +46,18 @@ module.exports = class Follower extends Participant{
 
         if(voteGranted) this._votedFor = message.sender;
 
-        this._participant.connection.send(
+        this.connection.send(
             {
                 type: MessageTypes.VOTE,
-                sender: this._participant.id,
+                sender: this.id,
                 voteGranted,
-                term: this._participant.currentTerm
+                term: this.currentTerm
             },
             message.sender)
     }
     onVote(message){
 
     }
-    _handleRequestVote(message){}
+}
 
-
-};
+module.exports = Follower;

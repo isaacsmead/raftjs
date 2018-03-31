@@ -1,6 +1,6 @@
 const debug = require('./src/utility/debug')(__filename);
 
-const Participant = require('./src/Participant');
+const Follower = require('./src/Follower');
 
 const TEST_TIMEOUT = 5000;
 const participantList = [
@@ -13,14 +13,22 @@ const participantList = [
 
 let participants = {};
 
-for( let id of participantList){
-    participants[id] = new Participant({id, participantList});
+function roleChange(participant){
+    participants[participant.id] = participant;
 }
+
+for( let id of participantList){
+    participants[id] = new Follower({id, participantList, roleChange});
+}
+
+
 
 
 setTimeout(()=> {
     for(let participant of participantList){
-        participantList[participant].connection.close();
+        participants[participant].cleanup();
+        participants[participant].connection.close();
+
     }
 }, TEST_TIMEOUT);
 

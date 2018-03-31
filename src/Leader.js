@@ -1,23 +1,22 @@
 const debug = require('./utility/debug')(__filename);
 const uuid = require("uuid/v4");
+const Participant = require('./Participant');
 
-module.exports = class Leader{
+module.exports = class Leader extends Participant{
 
-    constructor(participant){
-        this._log = participant.log;
+    constructor( options ){
+        super(options);
         this._nodeInfo = {};
-        this._matchIndex = {};
-        for(const id of participant.participantList){
+        for(const id of this.participantList){
             this._nodeInfo[id] = {
                 nextIndex : this._log.index + 1,
                 matchIndex : 0
             };
         }
-        this._participant = participant;
-        this.appendEntries = this.appendEntries.bind(this);
+        this.sendAppendEntries = this.sendAppendEntries.bind(this);
 
-        setInterval(this.appendEntries, 1000); //todo dynamic
-        debug.log(participant.id, 'is now leader');
+        this._interval = setInterval(this.sendAppendEntries, 1000); //todo dynamic
+        debug.log(this.id, 'is now leader');
     }
 
     onAppendEntries(message){
@@ -32,8 +31,12 @@ module.exports = class Leader{
     onVote(message){
     }
 
-    appendEntries(){
-        debug.log("appendEntries");
+    onTimeout(){
+
+    }
+
+    sendAppendEntries(){
+        debug.log("sendAppendEntries");
         /*{
             term: this._log.term,
             id: this._log.id,
@@ -41,4 +44,6 @@ module.exports = class Leader{
             perv_logTerm: this._log.term
         }*/
     }
+
+
 };

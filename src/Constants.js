@@ -15,4 +15,5 @@ exports.Roles = {
 exports.Settings= {
     TIMEOUT_WINDOW: 4000,
     MIN_TIMEOUT : 1000,
+    ELECTION_TIMEOUT: 1000,
 };

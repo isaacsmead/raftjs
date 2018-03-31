@@ -2,41 +2,41 @@ const debug = require('./utility/debug')(__filename);
 const
     Log = require('./Log'),
     Connection = require('./Connection'),
-    Follower = require('./Follower'),
-    Candidate = require('./Candidate'),
-    Leader = require('./Leader'),
     c = require('./Constants');
 const
     Roles = c.Roles,
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
+const requiredOptions = ['id', 'participantList', 'roleChange'];
 
-module.exports = class Participant {
-
+class Participant {
     constructor(options){
         this.onMessage = this.onMessage.bind(this);
-        if(options.hasOwnProperty('previousMode')){
-            options.previousMode.connection.callback = this.onMessage;
-            this._id = options.previousMode.id;
-            this._log = options.previousMode.log;
-            this._participantList = options.previousMode.participantList;
-            this._commitIndex = options.previousMode.commitIndex;
-            this._lastApplied = options.previousMode.lastApplied;
-            this._connection = options.previousMode.connection;
+        if(options instanceof Participant){
+            options.connection.callback = this.onMessage;
+            this._id = options.id;
+            this._log = options.log;
+            this._participantList = options.participantList;
+            this._commitIndex = options.commitIndex;
+            this._lastApplied = options.lastApplied;
+            this._connection = options.connection;
+            this.roleChange = options.roleChange;
         }
-        else if (options.hasOwnProperty('id') && options.hasOwnProperty('participantList')) {
+        else if (requiredOptions.every(option =>{ return options.hasOwnProperty(option)})){
             this._id = options.id;
             this._log = new Log(this.id);
             this._participantList = options.participantList;
             this._commitIndex = 0;
             this._lastApplied = 0;
             this._connection = new Connection(this.id, this.onMessage);
+            this.roleChange = options.roleChange;
         }
         else{
             debug.error('unable to create participant....missing options');
             process.exit(1);
         }
+        this.startTimer();
     }
 
     get id() { return this._id }
@@ -48,6 +48,14 @@ module.exports = class Participant {
     get lastLogEntry() { return this._log.lastLogEntry }
     get currentTerm(){ return this._log.currentTerm }
     set currentTerm(term){ this._log.currentTerm = term }
+
+    startTimer(){
+        clearTimeout(this._timeout);
+        const wait = Math.random() * Settings.TIMEOUT_WINDOW + Settings.MIN_TIMEOUT;
+        this._timeout = setTimeout(()=>{
+            this.onTimeout();
+        }, wait)
+    }
 
     onMessage(message){
         switch (message.type) {
@@ -66,4 +74,10 @@ module.exports = class Participant {
             default:
         }
     }
-};
+
+    cleanup(){
+        clearTimeout(this._timeout);
+    }
+}
+
+module.exports = Participant;

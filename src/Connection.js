@@ -42,7 +42,7 @@ module.exports = class Connection {
         this._socket = dgram.createSocket('udp4')
 
             .on('error', (err) => {
-                debug(`socket error:\n${err.stack}`);
+                debug.error(`socket error:\n${err.stack}`);
                 this._socket.close();
             })
 
