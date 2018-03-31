@@ -1,8 +1,7 @@
 const debug = require('./utility/debug')(__filename);
 const c = require('./Constants');
 const Participant = require('./Participant');
-const Follower = require('./Follower');
-const Leader = require('./Leader');
+
 const
     Roles = c.Roles,
     MessageTypes = c.MessageTypes,
@@ -18,6 +17,7 @@ class Candidate extends Participant {
 
         _requestVote(){
             this.currentTerm = this.currentTerm + 1;
+            debug.log(this.id, `holding election for term`, this.currentTerm);
             this._election[this.id] = true;
             const lastLogEntry = this.lastLogEntry;
             const mesage = {
@@ -27,7 +27,7 @@ class Candidate extends Participant {
                 lastLogIndex: lastLogEntry.lastLogIndex,
                 lastLogTerm: lastLogEntry.lastLogTerm
                 };
-            this.connection.broadcast(mesage, this._participantList);
+            this.connection.broadcast(mesage);
         }
 
         onTimeout(){
@@ -38,7 +38,7 @@ class Candidate extends Participant {
         onAppendEntries(message){
             if(message.term >= this.currentTerm){
                 // todo log entry
-                this.roleChange(new Follower(this));
+                this.changeRole(Roles.FOLLOWER, this);
                 this.cleanup();
             }
 
@@ -49,8 +49,8 @@ class Candidate extends Participant {
 
         onVote(message){
             if(message.term >= this.currentTerm){
-                debug.log(this.id, Follower);
-                this.roleChange(new Follower(this));
+                debug.log(this.id, `changing back to follower`);
+                this.changeRole(Roles.FOLLOWER, this);
                 this.cleanup();
                 return;
             }
@@ -62,7 +62,7 @@ class Candidate extends Participant {
                 .length;
 
             if( yesVotes > this._participantList.length / 2){
-                this.roleChange(new Leader(this));
+                this.changeRole(Roles.LEADER, this);
                 this.cleanup();
             }
         }

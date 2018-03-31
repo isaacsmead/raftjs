@@ -13,7 +13,7 @@ exports.Roles = {
 };
 
 exports.Settings= {
-    TIMEOUT_WINDOW: 4000,
-    MIN_TIMEOUT : 1000,
-    ELECTION_TIMEOUT: 1000,
+    TIMEOUT_WINDOW: 5000,
+    MIN_TIMEOUT : 2000,
+    APPEND_INTERVAL: 1000
 };

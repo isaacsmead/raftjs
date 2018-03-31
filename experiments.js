@@ -1,9 +1,9 @@
 const debug = require('./src/utility/debug')(__filename);
+const getRole = require('./src/RoleManager').getRole;
+const Roles = require('./src/Constants').Roles;
 
-const Follower = require('./src/Follower');
-
-const TEST_TIMEOUT = 5000;
-const participantList = [
+const TEST_TIMEOUT = 60000;
+let participantList = [
     8001,
     8002,
     8003,
@@ -13,16 +13,24 @@ const participantList = [
 
 let participants = {};
 
-function roleChange(participant){
-    participants[participant.id] = participant;
+let leaderId = null;
+
+function changeRoll(newRole, participant){
+    participants[participant.id] = getRole(newRole, participant);
+    if(newRole === Roles.LEADER) leaderId = participant.id;
 }
 
 for( let id of participantList){
-    participants[id] = new Follower({id, participantList, roleChange});
+    participants[id] = getRole(Roles.FOLLOWER, {id, participantList, changeRole: changeRoll});
 }
 
-
-
+setTimeout(()=> {
+   if(leaderId){
+       participants[leaderId].cleanup();
+       participants[leaderId].connection.close();
+       participantList = participantList.filter(participant => participant !== leaderId)
+   }
+}, 10000);
 
 setTimeout(()=> {
     for(let participant of participantList){

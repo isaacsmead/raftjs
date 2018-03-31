@@ -1,6 +1,11 @@
 const debug = require('./utility/debug')(__filename);
 const uuid = require("uuid/v4");
+const c = require('./Constants');
 const Participant = require('./Participant');
+const
+    Roles = c.Roles,
+    MessageTypes = c.MessageTypes,
+    Settings = c.Settings;
 
 module.exports = class Leader extends Participant{
 
@@ -15,8 +20,8 @@ module.exports = class Leader extends Participant{
         }
         this.sendAppendEntries = this.sendAppendEntries.bind(this);
 
-        this._interval = setInterval(this.sendAppendEntries, 1000); //todo dynamic
-        debug.log(this.id, 'is now leader');
+        this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL); //todo dynamic
+        debug.log(this.id, 'is now leader for term ', this.currentTerm);
     }
 
     onAppendEntries(message){
@@ -36,14 +41,22 @@ module.exports = class Leader extends Participant{
     }
 
     sendAppendEntries(){
-        debug.log("sendAppendEntries");
-        /*{
-            term: this._log.term,
-            id: this._log.id,
-            prev_logIndex: this._log.index,
-            perv_logTerm: this._log.term
-        }*/
+        const lastLogEntry = this.lastLogEntry;
+        //debug.log('Leader', this.id, 'broadcasting');
+        this.connection.broadcast({
+            type: MessageTypes.APPEND_ENTRIES,
+            term: this.currentTerm,
+            sender: this.id,
+            prevLogIndex: lastLogEntry.lastLogIndex,
+            prevLogTerm: lastLogEntry.lastLogTerm,
+            entries: [],
+            commitIndex: this.commitIndex
+        })
     }
 
+    cleanup(){
+        super.cleanup();
+        clearTimeout(this._appendInteval);
+    }
 
 };

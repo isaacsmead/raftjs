@@ -12,7 +12,7 @@ describe('Testing Candidate class', function () {
     const options = {
         id: 7000,
         participantList: Array.from({length: 5}, (x,i) => i + 7000),
-        roleChange: roleChange
+        changeRole: roleChange
     };
 
     let current = new Candidate(options);

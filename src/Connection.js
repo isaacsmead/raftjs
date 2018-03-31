@@ -3,14 +3,15 @@ const dgram = require('dgram');
 
 module.exports = class Connection {
 
-    constructor(port, handler){
+    constructor(port, handler, participantList){
         this._port = port;
         this._handler = handler;
+        this._participantList = participantList;
         this.open();
     }
 
     send(message, destination) {
-        if(destination === 0){
+        if(destination === 0 || !this._socket){
             debug.error('oops');
         }
         this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
@@ -25,10 +26,10 @@ module.exports = class Connection {
         this._handler = handler;
     }
 
-    broadcast (message, list){
-        for (const node of list){
-            if (node !== this._port){
-                this.send(message, node);
+    broadcast (message){
+        for (const participant of this._participantList){
+            if (participant !== this._port){
+                this.send(message, participant);
             }
         }
     }
@@ -60,6 +61,10 @@ module.exports = class Connection {
             .on('listening', () => {
                 const address = this._socket.address();
                 debug.log(`UDP socket listening on ${address.address}:${address.port}`);
+            })
+
+            .on('close', () => {
+                debug.log('Socket', this._port, 'closed')
             })
 
             .bind(this._port);

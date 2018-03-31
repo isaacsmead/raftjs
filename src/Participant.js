@@ -8,7 +8,7 @@ const
     MessageTypes = c.MessageTypes,
     Settings = c.Settings;
 
-const requiredOptions = ['id', 'participantList', 'roleChange'];
+const requiredOptions = ['id', 'participantList', 'changeRole'];
 
 class Participant {
     constructor(options){
@@ -21,7 +21,8 @@ class Participant {
             this._commitIndex = options.commitIndex;
             this._lastApplied = options.lastApplied;
             this._connection = options.connection;
-            this.roleChange = options.roleChange;
+            this._currentLeader = options.currentLeader;
+            this.changeRole = options.changeRole;
         }
         else if (requiredOptions.every(option =>{ return options.hasOwnProperty(option)})){
             this._id = options.id;
@@ -29,8 +30,9 @@ class Participant {
             this._participantList = options.participantList;
             this._commitIndex = 0;
             this._lastApplied = 0;
-            this._connection = new Connection(this.id, this.onMessage);
-            this.roleChange = options.roleChange;
+            this._connection = new Connection(this.id, this.onMessage, options.participantList);
+            this._currentLeader = null;
+            this.changeRole = options.changeRole;
         }
         else{
             debug.error('unable to create participant....missing options');
@@ -47,7 +49,9 @@ class Participant {
     get connection() { return this._connection }
     get lastLogEntry() { return this._log.lastLogEntry }
     get currentTerm(){ return this._log.currentTerm }
-    set currentTerm(term){ this._log.currentTerm = term }
+    get currentLeader() { return this._currentLeader }
+    set currentTerm(term) { this._log.currentTerm = term }
+    set currentLeader(leader) { this._currentLeader = leader }
 
     startTimer(){
         clearTimeout(this._timeout);
