@@ -2,33 +2,56 @@ const debug = require('./src/utility/debug')(__filename);
 const getRole = require('./src/RoleManager').getRole;
 const Roles = require('./src/Constants').Roles;
 
-let participantList = [
-    8001,
-    8002,
-    8003,
-    8004,
-    8005
-];
+const numTests = 50;
+const numParticipants = 5;
 
-let leader = null;
+const participantList = [];
+const participants = {};
+
+for(let i = 0 ; i < numParticipants; i++){
+    const id = i + 8000;
+    participantList.push(id);
+    participants[i] = getRole(Roles.FOLLOWER, {id, participantList, changeRole: changeRoll});
+}
+
+debug.log(participantList);
+
+let leaderId = null;
+let oldLeaderId = null;
 let counter = 0;
+let start;
 
 function changeRoll(newRole, participant){
+    participantList[participant.id] = getRole(newRole, participant);
     if(newRole === Roles.LEADER){
-        leader = getRole(newRole, participant);
-
-
-
+        leaderId = participant.id;
+        if(start){
+            const delay = new Date() - start;
+            debug.log(delay, 'ms to elect leader');
+            counter++;
+            participantList[oldLeaderId] = getRole(Roles.FOLLOWER, {id: oldLeaderId, participantList, changeRole: changeRoll})
+            if(counter < numTests){
+                setTimeout(()=> runTest(), 60);
+            }
+            else{
+                done();
+            }
+        }
     }
-    else getRole(newRole, participant);
 }
 
-for( let id of participantList){
-    getRole(Roles.FOLLOWER, {id, participantList, changeRole: changeRoll});
+
+function runTest(){
+    oldLeaderId = leaderId;
+    start = new Date();
+    participantList[leaderId].cleanup();
+    participantList[leaderId].connection.close();
 }
 
-function startTest(){
-    const start = new Date();
-    leader.cleanup();
-    leader.connection.close();
+
+function done(){
+    for(let participant of participantList){
+        participants[participant].cleanup();
+        participants[participant].connection.close();
+    }
 }

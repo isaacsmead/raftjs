@@ -6,7 +6,8 @@
   "scripts": {
     "test": "DEBUG=*,-mocha:* mocha",
     "clear-logs": "node clearLogs.js",
-    "experiment": "DEBUG=*  node experiments.js"
+    "experiment": "DEBUG=*  node experiments.js",
+    "time-elections": "DEBUG=timeElections  node timeElections.js"
   },
   "author": "Isaac Smead",
   "license": "ISC",
