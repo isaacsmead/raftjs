@@ -1,5 +1,7 @@
 const debug = require('./utility/debug')(__filename);
 const dgram = require('dgram');
+const gaussian = require('gaussian');
+var distribution = gaussian(20, 9);
 
 module.exports = class Connection {
 
@@ -11,15 +13,25 @@ module.exports = class Connection {
     }
 
     send(message, destination) {
-        if(destination === 0 || !this._socket){
-            debug.error('oops');
-        }
-        this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
-            if(e){
-                debug.error(`Error sending to port ${destination}`, e);
-                this._socket.close();
+
+        //setTimeout(()=> {
+
+            if(!this._socket){
+                debug.error('Socket already closed');
+                return;
             }
-        })
+            if(destination === 0){
+                debug.error('Invalid Destination of 0');
+            }
+
+            this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
+                if(e){
+                    debug.error(`Error sending to port ${destination}`, e);
+                    this._socket.close();
+                }
+            });
+
+        //}, distribution.ppf(Math.random()));
     }
 
     set callback(handler){
