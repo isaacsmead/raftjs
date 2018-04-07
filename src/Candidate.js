@@ -37,8 +37,9 @@ class Candidate extends Participant {
 
         onAppendEntries(message){
             if(message.term >= this.currentTerm){
-                // todo log entry
+                debug.log(this.id, `changing back to follower`);
                 this.changeRole(Roles.FOLLOWER, this);
+                // todo log entry
                 this.cleanup();
             }
 
