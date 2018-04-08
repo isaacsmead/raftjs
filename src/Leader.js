@@ -20,6 +20,7 @@ module.exports = class Leader extends Participant{
         }
         this.sendAppendEntries = this.sendAppendEntries.bind(this);
 
+        this.sendAppendEntries();
         this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL); //todo dynamic
         debug.log(this.id, 'is now leader for term ', this.currentTerm);
     }
@@ -28,9 +29,6 @@ module.exports = class Leader extends Participant{
 
     }
     onConfirmEntries(message){
-
-    }
-    onRequestVote(message){
 
     }
     onVote(message){
@@ -56,7 +54,7 @@ module.exports = class Leader extends Participant{
 
     cleanup(){
         super.cleanup();
-        clearTimeout(this._appendInteval);
+        clearInterval(this._appendInteval);
     }
 
 };

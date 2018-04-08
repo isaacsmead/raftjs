@@ -1,7 +1,8 @@
 const debug = require('./utility/debug')(__filename);
 const dgram = require('dgram');
 const gaussian = require('gaussian');
-var distribution = gaussian(20, 9);
+const settings = require('./Constants').Settings;
+var distribution = gaussian(settings.NETWORK_DELAY_MEDIAN, settings.NETWORK_DELAY_STD_DEVIATION^2);
 
 module.exports = class Connection {
 
@@ -10,13 +11,14 @@ module.exports = class Connection {
         this._handler = handler;
         this._participantList = participantList;
         this.open();
+        this._isOpen = false;
     }
 
     send(message, destination) {
 
-        //setTimeout(()=> {
+        setTimeout(()=> {
 
-            if(!this._socket){
+            if(!this._socket || !this._isOpen){
                 debug.error('Socket already closed');
                 return;
             }
@@ -31,7 +33,7 @@ module.exports = class Connection {
                 }
             });
 
-        //}, distribution.ppf(Math.random()));
+        }, distribution.ppf(Math.random()));
     }
 
     set callback(handler){
@@ -71,6 +73,7 @@ module.exports = class Connection {
             })
 
             .on('listening', () => {
+                this._isOpen = true;
                 const address = this._socket.address();
                 debug.log(`UDP socket listening on ${address.address}:${address.port}`);
             })

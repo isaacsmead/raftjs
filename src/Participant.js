@@ -11,7 +11,7 @@ const
 const requiredOptions = ['id', 'participantList', 'changeRole'];
 
 class Participant {
-    constructor(options){
+    constructor(options, message){
         this.onMessage = this.onMessage.bind(this);
         if(options instanceof Participant){
             options.connection.callback = this.onMessage;
@@ -22,6 +22,7 @@ class Participant {
             this._lastApplied = options.lastApplied;
             this._connection = options.connection;
             this._currentLeader = options.currentLeader;
+            this._votedFor = options._votedFor;
             this.changeRole = options.changeRole;
         }
         else if (requiredOptions.every(option =>{ return options.hasOwnProperty(option)})){
@@ -32,12 +33,14 @@ class Participant {
             this._lastApplied = 0;
             this._connection = new Connection(this.id, this.onMessage, options.participantList);
             this._currentLeader = null;
+            this._votedFor = null;
             this.changeRole = options.changeRole;
         }
         else{
             debug.error('unable to create participant....missing options');
             process.exit(1);
         }
+        if(message) this.onMessage(message);
         this.startTimer();
     }
 
@@ -62,6 +65,14 @@ class Participant {
     }
 
     onMessage(message){
+        if(message.term > this.currentTerm){
+            this.currentTerm = message.term;
+            this._votedFor = null;
+            if(this.role !== Roles.FOLLOWER){
+                this.changeRole(Roles.FOLLOWER, this, message);
+            }
+        }
+
         switch (message.type) {
             case MessageTypes.APPEND_ENTRIES:
                 this.onAppendEntries(message);
@@ -77,6 +88,41 @@ class Participant {
                 break;
             default:
         }
+    }
+
+    onRequestVote(message){
+
+        let voteGranted = true;
+
+        if(message.term < this.currentTerm || this._votedFor !== null){
+            voteGranted = false;
+        }
+
+        /*const lastLogEntry = this.lastLogEntry;
+        if(message.term <= this.currentTerm){
+            voteGranted = false;
+        }
+        else if(this._votedFor === null ||
+            (this._votedFor === message.sender &&
+                lastLogEntry.lastLogIndex <= message.lastLogIndex &&
+                lastLogEntry.lastLogTerm <= message.lastLogTerm)){
+            voteGranted = true;
+        }*/
+
+        if(voteGranted){
+            this._votedFor = message.sender;
+            this.startTimer();
+        }
+
+        debug.log(this.id, `voting`, voteGranted, 'for', message.sender, message.term);
+        this.connection.send(
+            {
+                type: MessageTypes.VOTE,
+                sender: this.id,
+                voteGranted,
+                term: this.currentTerm
+            },
+            message.sender)
     }
 
     cleanup(){

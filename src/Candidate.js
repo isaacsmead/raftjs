@@ -19,6 +19,7 @@ class Candidate extends Participant {
             this.currentTerm = this.currentTerm + 1;
             debug.log(this.id, `holding election for term`, this.currentTerm);
             this._election[this.id] = true;
+            this._votedFor = this.id;
             const lastLogEntry = this.lastLogEntry;
             const mesage = {
                 type: MessageTypes.REQUEST_VOTE,
@@ -46,10 +47,10 @@ class Candidate extends Participant {
         }
 
         onConfirmEntries(message){}
-        onRequestVote(message){}
+
 
         onVote(message){
-            if(message.term >= this.currentTerm){
+            if(message.term > this.currentTerm){
                 debug.log(this.id, `changing back to follower`);
                 this.changeRole(Roles.FOLLOWER, this);
                 this.cleanup();
