@@ -8,8 +8,8 @@ if(!fs.existsSync('results')){
     fs.mkdirSync('results');
 }
 
-const numTests = 50;
-const numParticipants = 5;
+const numTests = 100;
+const numParticipants = 100;
 
 const resultsFile = `./results/${numParticipants}x${numTests}`;
 if(fs.existsSync(resultsFile)){
@@ -41,7 +41,7 @@ function changeRoll(newRole, participant, message){
         if(start){
             const delay = new Date() - start;
             //debug.log(delay, 'ms to elect leader');
-            output.write
+            output.write(`${delay}\n`);
             counter++;
             participants[oldLeaderId] = getRole(Roles.FOLLOWER, {id: oldLeaderId, participantList, changeRole: changeRoll});
         }
@@ -65,7 +65,7 @@ function runTest(){
 
 
 function done(){
-
+    output.end();
     for(let participant of participantList){
         participants[participant].cleanup();
         participants[participant].connection.close();
@@ -73,4 +73,5 @@ function done(){
     }
     debug.error('test complete');
     wtf.dump()
+    process.exit(1);
 }
