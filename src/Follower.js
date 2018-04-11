@@ -8,8 +8,8 @@ const
 
 class Follower extends Participant {
 
-    constructor( options ){
-        super (options);
+    constructor( options, message ){
+        super (options, message);
     }
 
     onTimeout(){
@@ -22,12 +22,6 @@ class Follower extends Participant {
     onAppendEntries(message){
         this.startTimer(); // todo any case where ignore?
 
-
-        if(message.term > this.currentTerm){
-            this.currentLeader = message.sender;
-            this.currentTerm = message.term;
-            this._votedFor = null;
-        }
 
         // todo Reply false if term < currentTerm
         // todo reply false if log doesn't contain entry at previous log index who's term doesn't match prevLogTerm

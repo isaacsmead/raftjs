@@ -2,7 +2,8 @@ const debug = require('./utility/debug')(__filename);
 const dgram = require('dgram');
 const gaussian = require('gaussian');
 const settings = require('./Constants').Settings;
-var distribution = gaussian(settings.NETWORK_DELAY_MEDIAN, settings.NETWORK_DELAY_STD_DEVIATION^2);
+const variance = Math.pow(settings.NETWORK_DELAY_STD_DEVIATION, 2);
+const distribution = gaussian(settings.NETWORK_DELAY_MEDIAN, variance);
 
 module.exports = class Connection {
 
@@ -19,7 +20,7 @@ module.exports = class Connection {
         setTimeout(()=> {
 
             if(!this._socket || !this._isOpen){
-                debug.error('Socket already closed');
+                debug.log('Unable to send', this._port, 'is closed');
                 return;
             }
             if(destination === 0){
@@ -28,8 +29,13 @@ module.exports = class Connection {
 
             this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
                 if(e){
-                    debug.error(`Error sending to port ${destination}`, e);
-                    this._socket.close();
+                    if(e.code === 'ECANCELED'){
+                        debug.log('send canceled', this._port)
+                    }
+                    else{
+                        debug.error(`Error sending to port ${destination}`, e);
+                        this._socket.close();
+                    }
                 }
             });
 
@@ -49,8 +55,13 @@ module.exports = class Connection {
     }
 
     close(){
-        this._socket.close();
-        this._socket = null;
+        if(this._socket){
+            this._socket.close();
+            this._socket = null;
+        }
+        else{
+            debug.error('Trying to close a null socket', this._port)
+        }
     }
 
     open(){

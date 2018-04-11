@@ -3,23 +3,31 @@ const getRole = require('./src/RoleManager').getRole;
 const Roles = require('./src/Constants').Roles;
 const fs = require('fs');
 const wtf = require('wtfnode');
+const argv = require('yargs')
+    .usage('Usage: -n [number nodes] -e [number elections]')
+    .demandOption(['n','e'])
+    .argv;
+
+
+const numElections = argv.e;
+const numParticipants = argv.n;
+
 
 if(!fs.existsSync('results')){
     fs.mkdirSync('results');
 }
 
-const numTests = 100;
-const numParticipants = 100;
+debug.log('timing', numParticipants, 'nodes for', numElections, 'elections');
 
-const resultsFile = `./results/${numParticipants}x${numTests}`;
+const resultsFile = `./results/${numParticipants}x${numElections}`;
 if(fs.existsSync(resultsFile)){
-    debug.error('results file already exists');
-    process.exit(1);
+    debug.log('over-writing previous results', resultsFile);
+    fs.unlinkSync(resultsFile);
 }
 const output = fs.createWriteStream(resultsFile);
 
 
-
+let killed = null;
 const participantList = [];
 const participants = {};
 
@@ -35,17 +43,23 @@ let counter = 0;
 let start;
 
 function changeRoll(newRole, participant, message){
+    if(participant.id === killed){
+        //debug.error(`Killed member`, participant.id, 'trying to change to ', newRole);
+        return;
+    }
     participants[participant.id] = getRole(newRole, participant, message);
     if(newRole === Roles.LEADER){
         leaderId = participant.id;
         if(start){
-            const delay = new Date() - start;
-            //debug.log(delay, 'ms to elect leader');
+            const delay = Date.now() - start;
+            //debug.log(delay, 'ms to elect leader', leaderId);
             output.write(`${delay}\n`);
             counter++;
+            debug.log(counter, 'rounds of', numElections, 'complete');
             participants[oldLeaderId] = getRole(Roles.FOLLOWER, {id: oldLeaderId, participantList, changeRole: changeRoll});
+            killed = null;
         }
-        if(counter < numTests){
+        if(counter < numElections){
             setTimeout(runTest, 60);
         }
         else{
@@ -58,9 +72,10 @@ function changeRoll(newRole, participant, message){
 function runTest(){
     oldLeaderId = leaderId;
     //debug.log('killing off', leaderId);
-    start = new Date();
+    start = Date.now();
     participants[leaderId].cleanup();
     participants[leaderId].connection.close();
+    killed = leaderId;
 }
 
 
@@ -72,6 +87,5 @@ function done(){
         delete participants[participant];
     }
     debug.error('test complete');
-    wtf.dump()
-    process.exit(1);
+    wtf.dump();
 }

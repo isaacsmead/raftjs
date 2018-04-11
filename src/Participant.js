@@ -40,7 +40,9 @@ class Participant {
             debug.error('unable to create participant....missing options');
             process.exit(1);
         }
-        if(message) this.onMessage(message);
+        if(message){
+            this.onMessage(message);
+        }
         this.startTimer();
     }
 
@@ -69,7 +71,10 @@ class Participant {
             this.currentTerm = message.term;
             this._votedFor = null;
             if(this.role !== Roles.FOLLOWER){
+                debug.log(this.id, `changing back to follower`);
                 this.changeRole(Roles.FOLLOWER, this, message);
+                this.cleanup();
+                return;
             }
         }
 
@@ -87,6 +92,7 @@ class Participant {
                 this.onVote(message);
                 break;
             default:
+                debug.error("Unknown message", message);
         }
     }
 

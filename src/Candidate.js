@@ -8,8 +8,8 @@ const
     Settings = c.Settings;
 
 class Candidate extends Participant {
-    constructor( options ){
-        super(options);
+    constructor( options, message ){
+        super(options, message);
         this._election = {};
         this._requestVote();
     }
@@ -37,10 +37,9 @@ class Candidate extends Participant {
         }
 
         onAppendEntries(message){
-            if(message.term >= this.currentTerm){
-                debug.log(this.id, `changing back to follower`);
-                this.changeRole(Roles.FOLLOWER, this);
-                // todo log entry
+            if(this.term >= message.term){
+                debug.log(this.id, this.term, 'going back to candidate, Leader:', message.sender, message.term)
+                this.changeRole(Roles.FOLLOWER, this, message);
                 this.cleanup();
             }
 
@@ -50,13 +49,10 @@ class Candidate extends Participant {
 
 
         onVote(message){
-            if(message.term > this.currentTerm){
-                debug.log(this.id, `changing back to follower`);
-                this.changeRole(Roles.FOLLOWER, this);
-                this.cleanup();
+            if(!message.term === this.currentTerm){
+                debug.error(this.id, this.currentTerm, 'discarding vote from', message.sender, message.term);
                 return;
             }
-
             this._election[message.sender] = message.voteGranted;
 
             const yesVotes = Object.keys(this._election)

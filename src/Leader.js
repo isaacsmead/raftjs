@@ -9,8 +9,8 @@ const
 
 module.exports = class Leader extends Participant{
 
-    constructor( options ){
-        super(options);
+    constructor( options, message ){
+        super(options, message);
         this._nodeInfo = {};
         for(const id of this.participantList){
             this._nodeInfo[id] = {
@@ -21,7 +21,7 @@ module.exports = class Leader extends Participant{
         this.sendAppendEntries = this.sendAppendEntries.bind(this);
 
         this.sendAppendEntries();
-        this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL); //todo dynamic
+        this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL);
         debug.log(this.id, 'is now leader for term ', this.currentTerm);
     }
 
