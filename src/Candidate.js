@@ -37,8 +37,8 @@ class Candidate extends Participant {
         }
 
         onAppendEntries(message){
-            if(this.term >= message.term){
-                debug.log(this.id, this.term, 'going back to candidate, Leader:', message.sender, message.term)
+            if(this.currentTerm <= message.term){
+                debug.log(this.id, 'changing back to follower');
                 this.changeRole(Roles.FOLLOWER, this, message);
                 this.cleanup();
             }

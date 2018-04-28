@@ -20,7 +20,7 @@ module.exports = class Connection {
         setTimeout(()=> {
 
             if(!this._socket || !this._isOpen){
-                debug.log('Unable to send', this._port, 'is closed');
+                debug.log('Unable to send,', this._port, 'is closed');
                 return;
             }
             if(destination === 0){

@@ -19,6 +19,9 @@ module.exports = class Leader extends Participant{
             };
         }
         this.sendAppendEntries = this.sendAppendEntries.bind(this);
+        if(options.carriedTerm){
+            this.currentTerm = options.carriedTerm;
+        }
 
         this.sendAppendEntries();
         this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL);
@@ -40,7 +43,7 @@ module.exports = class Leader extends Participant{
 
     sendAppendEntries(){
         const lastLogEntry = this.lastLogEntry;
-        //debug.log('Leader', this.id, 'broadcasting');
+        //debug.log(this.id, 'broadcasting');
         this.connection.broadcast({
             type: MessageTypes.APPEND_ENTRIES,
             term: this.currentTerm,
