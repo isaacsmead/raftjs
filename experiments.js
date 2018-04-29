@@ -24,7 +24,7 @@ for( let id of participantList){
     participants[id] = getRole(Roles.FOLLOWER, {id, participantList, changeRole: changeRoll});
 }
 
-setTimeout(()=> {
+/*setTimeout(()=> {
     if(leaderId){
         participants[leaderId].cleanup();
         participants[leaderId].connection.close();
@@ -46,7 +46,18 @@ setTimeout(()=> {
         participants[leaderId].connection.close();
         participantList = participantList.filter(participant => participant !== leaderId)
     }
-}, 3000);
+}, 3000);*/
+
+setTimeout(()=> {
+    if(leaderId){
+        participants[leaderId].transferLead();
+        setTimeout(()=> {
+            participants[leaderId].cleanup();
+            participants[leaderId].connection.close();
+        }, 5)
+
+    }
+}, 2000);
 
 setTimeout(()=> {
     for(let participant of participantList){
@@ -56,17 +67,6 @@ setTimeout(()=> {
     }
 }, TEST_TIMEOUT);
 
-/*const Conn = require('./src/Connection');
-const
-    p1 = 8000,
-    p2 = 9000;
-
-const
-    c1 = new Conn(p1, (m)=>{ console.log('c1', m ) }),
-    c2 = new Conn(p2, (m)=>{ console.log('c2', m ) });
-
-setTimeout( ()=>{c1.send("hello", p2)} , 1000);
-setTimeout( ()=> {c2.send("asdfdf", p1)}, 2000);*/
 
 
 

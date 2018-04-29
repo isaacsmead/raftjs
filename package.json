@@ -7,7 +7,8 @@
     "test": "DEBUG=*,-mocha:* mocha",
     "clear-logs": "node clearLogs.js",
     "experiment": "DEBUG=*  node experiments.js",
-    "time-elections": "DEBUG=timeElections  node timeElections.js"
+    "time-elections": "DEBUG=time-elections  node time-elections.js -n 15 -e 500",
+    "time-mulit-layer": "DEBUG=time-multi-layer,ERROR:*  node time-multi-layer.js -n 15 -e 500"
   },
   "author": "Isaac Smead",
   "license": "ISC",

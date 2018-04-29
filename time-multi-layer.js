@@ -1,6 +1,8 @@
 const debug = require('./src/utility/debug')(__filename);
 const getRole = require('./src/RoleManager').getRole;
 const Roles = require('./src/Constants').Roles;
+const MessageTypes = require('./src/Constants').MessageTypes;
+const Settings = require('./src/Constants').Settings;
 const fs = require('fs');
 const wtf = require('wtfnode');
 const argv = require('yargs')
@@ -25,7 +27,7 @@ if(!fs.existsSync('results2')){
 
 debug.log('timing', groupSize, 'nodes for', numElections, 'elections');
 
-const resultsFile = `./results2/${groupSize}x${numElections}`;
+const resultsFile = `./results2/${groupSize}x${numElections}.csv`;
 if(fs.existsSync(resultsFile)){
     debug.log('over-writing previous results', resultsFile);
     fs.unlinkSync(resultsFile);
@@ -54,7 +56,8 @@ for(const id of Object.keys(participantLists)){
     groupLeaderIds[id] = null;
 }
 
-const topParticipantList = [...Object.keys(participantLists), leaderPort];
+const topParticipantList = [...Object.keys(participantLists), leaderPort].map(key => {return parseInt(key)});
+
 let leaderId = null;
 let oldLeaderId = null;
 let counter = 0;
@@ -69,18 +72,23 @@ function changeRoll(newRole, participant, message){
     if(newRole === Roles.LEADER){
         const gpId = getGroupId(participant.id);
 
+        // group leader elected, if just starting out start follower for top tier
+        if(groupLeaderIds[gpId] === null){
+            participants[gpId] = getRole(Roles.FOLLOWER, { id: gpId, participantList: topParticipantList, changeRole: changeTopRole });
+        }
+
         // keep track of id
         groupLeaderIds[gpId] = participant.id;
 
-        // group leader elected, start follower for top tier
-        participants[gpId] = getRole(Roles.FOLLOWER, { id: gpId, participantList: topParticipantList, changeRole: changeTopRole });
+
 
         if(testStartTime) {
             const delay = Date.now() - testStartTime;
-            debug.log(delay, 'ms to complete replacement', leaderId);
             output.write(`${delay}\n`);
             counter++;
-            debug.log(counter, 'rounds of', numElections, 'complete');
+            if(counter % 10 === 0){
+                debug.log(counter, 'rounds of', numElections, 'complete');
+            }
             participants[oldLeaderId] = getRole(Roles.FOLLOWER, {
                 id: oldLeaderId,
                 participantList:
@@ -90,7 +98,7 @@ function changeRoll(newRole, participant, message){
             killed = null;
 
             if (counter < numElections) {
-                setTimeout(runTest, 60);
+                setTimeout(runTest, Math.random()*Settings.APPEND_INTERVAL + Settings.APPEND_INTERVAL);
             }
             else {
                 setTimeout(done, 60);
@@ -109,14 +117,17 @@ function changeTopRole(newRole, participant, message){
         leaderId = groupLeaderIds[participant.id];
 
         // since node is now supreme leader must stop as group leader
-        groupLeaderIds[participant.id] = null;
-        participants[leaderId].cleanup();
-        participants[leaderId].connection.close();
+        // groupLeaderIds[participant.id] = null;
+        // request a new leader take over
 
-        // new group leader will take over top tier follower
-        // so close group port connection as well
-        participants[participant.id].cleanup();
-        participants[participant.id].connection.close();
+        const foo = participants[leaderId];
+        foo.transferLead();
+        setTimeout(()=> {
+            foo.cleanup();
+            foo.connection.close();
+        },30);
+
+
 
         participants[leaderId] = getRole(
             Roles.LEADER, {
@@ -129,7 +140,7 @@ function changeTopRole(newRole, participant, message){
 
         if(testStartTime){
             const delay = Date.now() - testStartTime;
-            debug.log(delay, 'ms to elect leader', leaderId);
+            //debug.log(delay, 'ms to elect leader', leaderId);
             output.write(`${delay}, `);
         }
     }
@@ -146,7 +157,7 @@ function badChangeRole(newRole, participant, message){
 
 function runTest(){
     oldLeaderId = leaderId;
-    debug.log('killing off', leaderId);
+    //debug.log('killing off', leaderId);
     testStartTime = Date.now();
     participants[leaderId].cleanup();
     participants[leaderId].connection.close();

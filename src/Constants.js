@@ -2,9 +2,8 @@ exports.MessageTypes = {
     APPEND_ENTRIES: 'APPEND_ENTRIES',
     CONFIRM_ENTRIES: 'CONFIRM_ENTRIES',
     REQUEST_VOTE: 'REQUEST_VOTE' ,
-    VOTE: 'VOTE'
-
-
+    VOTE: 'VOTE',
+    TIMEOUT_NOW: 'TIMEOUT_NOW'
 };
 exports.Roles = {
     LEADER: 'LEADER',
@@ -13,10 +12,9 @@ exports.Roles = {
 };
 
 exports.Settings= {
-    TIMEOUT_WINDOW: 300,
+    TIMEOUT_WINDOW: 450,
     MIN_TIMEOUT : 150,
-    APPEND_INTERVAL: 20,
-    NETWORK_DELAY_MEDIAN: 15,
+    APPEND_INTERVAL: 75,
+    NETWORK_DELAY_MEDIAN: 20,
     NETWORK_DELAY_STD_DEVIATION: 2
-
 };

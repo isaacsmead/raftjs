@@ -17,29 +17,27 @@ module.exports = class Connection {
 
     send(message, destination) {
 
-        setTimeout(()=> {
 
-            if(!this._socket || !this._isOpen){
-                debug.log('Unable to send,', this._port, 'is closed');
-                return;
-            }
-            if(destination === 0){
-                debug.error('Invalid Destination of 0');
-            }
+        if(!this._socket || !this._isOpen){
+            debug.log('Unable to send,', this._port, 'is closed');
+            return;
+        }
+        if(destination === 0){
+            debug.error('Invalid Destination of 0');
+        }
 
-            this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
-                if(e){
-                    if(e.code === 'ECANCELED'){
-                        debug.log('send canceled', this._port)
-                    }
-                    else{
-                        debug.error(`Error sending to port ${destination}`, e);
-                        this._socket.close();
-                    }
+        this._socket.send(JSON.stringify(message), destination, 'localhost', (e) => {
+            if(e){
+                if(e.code === 'ECANCELED'){
+                    debug.log('send canceled', this._port)
                 }
-            });
+                else{
+                    debug.error(`Error sending to port ${destination}`, e);
+                    this._socket.close();
+                }
+            }
+        });
 
-        }, distribution.ppf(Math.random()));
     }
 
     set callback(handler){
@@ -80,7 +78,10 @@ module.exports = class Connection {
                 catch(e){
                     debug.error(`Error parsing JSON`);
                 }
-                if(m) this._handler(m);
+                const delay = distribution.ppf(Math.random());
+                setTimeout(()=> {
+                    if(m && this._socket)  this._handler(m);
+                }, distribution.ppf(Math.random()));
             })
 
             .on('listening', () => {

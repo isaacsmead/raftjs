@@ -71,7 +71,7 @@ class Participant {
             this.currentTerm = message.term;
             this._votedFor = null;
             if(this.role !== Roles.FOLLOWER){
-                debug.log(this.id, `changing back to follower`);
+                //debug.log(this.id, `changing back to follower`);
                 this.changeRole(Roles.FOLLOWER, this, message);
                 this.cleanup();
                 return;
@@ -90,6 +90,11 @@ class Participant {
                 break;
             case MessageTypes.VOTE:
                 this.onVote(message);
+                break;
+            case MessageTypes.TIMEOUT_NOW:
+                debug.log(this.id, "TIMEOUT NOW received");
+                clearTimeout(this._timeout);
+                this.onTimeout();
                 break;
             default:
                 debug.error("Unknown message", message);
@@ -120,7 +125,7 @@ class Participant {
             this.startTimer();
         }
 
-        debug.log(this.id, `voting`, voteGranted, 'for', message.sender, message.term);
+        //debug.log(this.id, this.role, `voting`, voteGranted, 'for', message.sender, message.term);
         this.connection.send(
             {
                 type: MessageTypes.VOTE,

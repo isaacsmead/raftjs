@@ -12,6 +12,7 @@ class Candidate extends Participant {
         super(options, message);
         this._election = {};
         this._requestVote();
+        this._changing = false;
     }
     get role(){return Roles.CANDIDATE}
 
@@ -59,8 +60,9 @@ class Candidate extends Participant {
                 .filter(participant => {return this._election[participant];})
                 .length;
 
-            if( yesVotes > this._participantList.length / 2){
+            if( yesVotes > this._participantList.length / 2 && !this._changing){
                 this.changeRole(Roles.LEADER, this);
+                this._changing = true;
                 this.cleanup();
             }
         }

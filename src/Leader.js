@@ -23,10 +23,15 @@ module.exports = class Leader extends Participant{
             this.currentTerm = options.carriedTerm;
         }
 
-        this.sendAppendEntries();
+        setTimeout(()=> {
+            this.sendAppendEntries();
+        },5);
+
         this._appendInteval = setInterval(this.sendAppendEntries, Settings.APPEND_INTERVAL);
         debug.log(this.id, 'is now leader for term ', this.currentTerm);
     }
+
+    get role(){return Roles.LEADER}
 
     onAppendEntries(message){
 
@@ -58,6 +63,25 @@ module.exports = class Leader extends Participant{
     cleanup(){
         super.cleanup();
         clearInterval(this._appendInteval);
+    }
+
+    transferLead(){
+        let replacement = null;
+        do {
+            const index = Math.floor(Math.random() * this.participantList.length);
+            if(this.participantList[index] !== this.id){
+                replacement = this.participantList[index]
+            }
+
+        }while (replacement === null);
+
+        debug.log(this.id, "Transferring Lead to", replacement);
+
+        this.connection.send({
+            type: MessageTypes.TIMEOUT_NOW,
+            sender: this.id,
+            term: this.currentTerm
+        },replacement);
     }
 
 };
