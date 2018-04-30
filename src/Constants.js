@@ -12,7 +12,7 @@ exports.Roles = {
 };
 
 exports.Settings= {
-    TIMEOUT_WINDOW: 450,
+    TIMEOUT_WINDOW: 300,
     MIN_TIMEOUT : 150,
     APPEND_INTERVAL: 75,
     NETWORK_DELAY_MEDIAN: 20,
